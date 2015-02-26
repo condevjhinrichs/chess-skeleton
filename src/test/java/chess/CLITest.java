@@ -70,6 +70,15 @@ public class CLITest {
         assertEquals("It should have printed the board three times", output.get(2), output.get(4));
     }
 
+    @Test
+    public void testListCommand() throws Exception {
+        runCliWithInput("list");
+        List<String> output = captureOutput();
+
+        assertEquals("It should have printed a title of 'White's Possible Moves:'", 23, output.get(4).length());
+        assertEquals("It should have printed the board twice", output.get(2), output.get(output.size() - 2));
+    }
+
     private List<String> captureOutput() {
         ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
 

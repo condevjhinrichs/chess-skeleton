@@ -3,6 +3,7 @@ package chess;
 import chess.pieces.Piece;
 
 import java.io.*;
+import java.util.Set;
 
 /**
  * This class provides the basic CLI interface to the Chess game.
@@ -64,7 +65,8 @@ public class CLI {
                 } else if (input.equals("board")) {
                     writeOutput("Current Game:");
                 } else if (input.equals("list")) {
-                    writeOutput("====> List Is Not Implemented (yet) <====");
+                    writeOutput(gameState.getCurrentPlayer() + "'s Possible Moves:");
+                    showMoves();
                 } else if (input.startsWith("move")) {
                     writeOutput("====> Move Is Not Implemented (yet) <====");
                 } else {
@@ -93,6 +95,10 @@ public class CLI {
         writeOutput("    'move <colrow> <colrow>'     Make a move");
     }
 
+    private void showMoves() {
+        writeOutput(getMovesAsString());
+    }
+
     /**
      * Display the board for the user(s)
      */
@@ -108,6 +114,19 @@ public class CLI {
 
         printSeparator(builder);
         printColumnLabels(builder);
+
+        return builder.toString();
+    }
+
+    String getMovesAsString() {
+        StringBuilder builder = new StringBuilder();
+        builder.append(NEWLINE);
+
+        Set<String> moves = gameState.getMovesList();
+        for(String move : moves) {
+            builder.append(move);
+            builder.append(NEWLINE);
+        }
 
         return builder.toString();
     }

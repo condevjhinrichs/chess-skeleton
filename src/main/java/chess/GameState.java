@@ -2,9 +2,13 @@ package chess;
 
 
 import chess.pieces.*;
+import com.google.common.base.Predicate;
+import com.google.common.collect.Maps;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Class that represents the current state of the game.  Basically, what pieces are in which positions on the
@@ -85,6 +89,29 @@ public class GameState {
     }
 
     /**
+     * Get all the possible moves for the current player
+     *
+     * @return Set of Strings, each of which has the initial position and final position
+     */
+    public Set<String> getMovesList() {
+        // get the current player's pieces
+        Map<Position, Piece> currentPlayerPieces =
+                Maps.filterEntries(positionToPieceMap, new PlayerPieces(getCurrentPlayer()));
+
+        Set<String> possibleMoves = new HashSet<String>();
+        // get the possible moves for each piece
+        for(Map.Entry<Position, Piece> positionPiece : currentPlayerPieces.entrySet()) {
+            Piece piece = positionPiece.getValue();
+
+            // add the possible moves for the current piece to the final possibleMoves
+            for(String move : piece.getPossibleMoves(positionToPieceMap)) {
+                possibleMoves.add(move);
+            }
+        }
+        return possibleMoves;
+    }
+
+    /**
      * Get the piece at a given position on the board
      * @param position The position to inquire about.
      * @return The piece at that position, or null if it does not exist.
@@ -100,5 +127,28 @@ public class GameState {
      */
     private void placePiece(Piece piece, Position position) {
         positionToPieceMap.put(position, piece);
+        piece.setPosition(position);
+    }
+
+
+    /**
+     *  A Guava Predicate to extract the current player's pieces from the positionToPieceMap
+     *
+     *  Example found here:
+     *  http://stackoverflow.com/questions/17330487/creating-subset-of-hashmap-based-on-some-specifications
+     */
+    private static class PlayerPieces implements Predicate<Map.Entry<Position, Piece>> {
+
+        // the Player whose entries we return
+        private Player player;
+
+        private PlayerPieces(Player player) {
+            this.player = player;
+        }
+
+        @Override
+        public boolean apply(Map.Entry<Position, Piece> input) {
+            return input.getValue().getOwner().equals(player);
+        }
     }
 }

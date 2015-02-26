@@ -6,6 +6,8 @@ import chess.pieces.Rook;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.Set;
+
 import static junit.framework.Assert.*;
 
 /**
@@ -48,5 +50,14 @@ public class GameStateTest {
         Piece blackQueen = state.getPieceAt("d8");
         assertTrue("A queen should be at d8", blackQueen instanceof Queen);
         assertEquals("The queen at d8 should be owned by Black", Player.Black, blackQueen.getOwner());
+    }
+
+    @Test
+    public void testGetMovesList() {
+        state.reset();
+
+        Set<String> moves = state.getMovesList();
+
+        assertEquals("There should be 20 possible first moves", 20, moves.size());
     }
 }
