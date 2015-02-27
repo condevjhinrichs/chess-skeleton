@@ -1,5 +1,9 @@
 package chess;
 
+import com.google.common.collect.Lists;
+
+import java.util.List;
+
 /**
  * Describes a position on the Chess Board
  */
@@ -11,13 +15,19 @@ public class Position {
     private int row;
     private char column;
 
+    private static final List<Character> COLUMNS = Lists.newArrayList('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h');
+
     /**
      * Create a new position object
      *
      * @param column The column
      * @param row The row
      */
-    public Position(char column, int row) {
+    public Position(char column, int row) throws ExceptionInInitializerError {
+        if (!COLUMNS.contains(column) || row < MIN_ROW || MAX_COLUMN < row) {
+            throw new ExceptionInInitializerError("The position given would be off the board");
+        }
+
         this.row = row;
         this.column = column;
     }
@@ -36,6 +46,47 @@ public class Position {
 
     public char getColumn() {
         return column;
+    }
+
+    public boolean isOnBoard(int colMovement, int rowMovement) {
+        int newColIndex = COLUMNS.indexOf(getColumn()) + colMovement;
+        int newRow = getRow() + rowMovement;
+
+        return 0 <= newColIndex && newColIndex <= 7 && 1 <= newRow && newRow <= 8;
+    }
+
+    /**
+     * Changes the column value by a specified offset
+     *
+     * @param offset
+     * @return char- the new column from the offset
+     * @throws IndexOutOfBoundsException if the offset would produce a position not on the board
+     */
+    public char moveColumn(int offset) throws IndexOutOfBoundsException {
+        int newColIndex = COLUMNS.indexOf(getColumn()) + offset;
+        
+        if (0 <= newColIndex && newColIndex <= 7) {
+            return COLUMNS.get(newColIndex);
+        } else {
+            throw new IndexOutOfBoundsException("Moving " + offset + " columns is invalid.");
+        }
+    }
+
+    /**
+     * Changes the row value by the specified offset
+     *
+     * @param offset
+     * @return int- the new row from the offset
+     * @throws IndexOutOfBoundsException if the offset would produce a position not on the board
+     */
+    public int moveRow(int offset) throws IndexOutOfBoundsException {
+        int newRowIndex = getRow() + offset;
+
+        if (MIN_ROW <= newRowIndex && newRowIndex <= MAX_ROW) {
+            return newRowIndex;
+        } else {
+            throw new IndexOutOfBoundsException("Moving " + offset + " rows is invalid.");
+        }
     }
 
     @Override

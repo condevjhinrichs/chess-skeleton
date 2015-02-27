@@ -55,7 +55,6 @@ public class GameStateTest {
     @Test
     public void testGetMovesList() {
         state.reset();
-
         Set<String> moves = state.getMovesList();
 
         assertEquals("There should be 20 possible first moves", 20, moves.size());

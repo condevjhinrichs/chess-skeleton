@@ -2,6 +2,7 @@ package chess;
 
 
 import chess.pieces.*;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Maps;
 
@@ -35,6 +36,10 @@ public class GameState {
 
     public Player getCurrentPlayer() {
         return currentPlayer;
+    }
+
+    public Map<Position, Piece> getPositionToPieceMap() {
+        return positionToPieceMap;
     }
 
     /**
@@ -76,6 +81,18 @@ public class GameState {
         placePiece(new Pawn(Player.Black), new Position("f7"));
         placePiece(new Pawn(Player.Black), new Position("g7"));
         placePiece(new Pawn(Player.Black), new Position("h7"));
+    }
+
+    /**
+     *
+     * Provide a way to create a specific board scenario for testing purposes
+     *
+     */
+    @VisibleForTesting
+    public void setFakeBoard(Map<Piece, Position> piecePositionMap) {
+        for(Map.Entry<Piece, Position> piecePosition : piecePositionMap.entrySet()) {
+            placePiece(piecePosition.getKey(), piecePosition.getValue());
+        }
     }
 
     /**
