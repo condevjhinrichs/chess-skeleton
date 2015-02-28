@@ -21,7 +21,7 @@ public class PawnTest {
 
     private GameState gameState;
     private Map<Piece, Position> board;
-    private Piece pawn;
+    private Pawn pawn;
     private String testPosition;
     private Set<String> resultMoves;
 
@@ -39,7 +39,7 @@ public class PawnTest {
         testPosition = "a2"; // on edge of board
         board.put(new Pawn(Player.White), new Position(testPosition));
         gameState.setFakeBoard(board);
-        pawn = gameState.getPieceAt(testPosition);
+        pawn = (Pawn) gameState.getPieceAt(testPosition);
 
         resultMoves = pawn.getPossibleMoves(gameState.getPositionToPieceMap());
         assertEquals(2, resultMoves.size());
@@ -50,7 +50,7 @@ public class PawnTest {
         testPosition = "a7"; // on edge of board
         board.put(new Pawn(Player.Black), new Position(testPosition));
         gameState.setFakeBoard(board);
-        pawn = gameState.getPieceAt(testPosition);
+        pawn = (Pawn) gameState.getPieceAt(testPosition);
 
         resultMoves = pawn.getPossibleMoves(gameState.getPositionToPieceMap());
         assertEquals(2, resultMoves.size());
@@ -67,7 +67,7 @@ public class PawnTest {
         board.put(new Pawn(Player.White), new Position(testPosition));
         board.put(new Pawn(Player.Black), new Position("g3"));
         gameState.setFakeBoard(board);
-        pawn = gameState.getPieceAt(testPosition);
+        pawn = (Pawn) gameState.getPieceAt(testPosition);
 
         resultMoves = pawn.getPossibleMoves(gameState.getPositionToPieceMap());
         assertEquals(3, resultMoves.size());
@@ -81,7 +81,7 @@ public class PawnTest {
         board.put(new Pawn(Player.Black), new Position(testPosition));
         board.put(new Pawn(Player.White), new Position("g6"));
         gameState.setFakeBoard(board);
-        pawn = gameState.getPieceAt(testPosition);
+        pawn = (Pawn) gameState.getPieceAt(testPosition);
 
         resultMoves = pawn.getPossibleMoves(gameState.getPositionToPieceMap());
         assertEquals(3, resultMoves.size());
@@ -98,7 +98,7 @@ public class PawnTest {
         testPosition = "d3";
         board.put(new Pawn(Player.White), new Position(testPosition));
         gameState.setFakeBoard(board);
-        pawn = gameState.getPieceAt(testPosition);
+        pawn = (Pawn) gameState.getPieceAt(testPosition);
 
         resultMoves = pawn.getPossibleMoves(gameState.getPositionToPieceMap());
         assertEquals(1, resultMoves.size());
@@ -109,7 +109,7 @@ public class PawnTest {
         testPosition = "d6";
         board.put(new Pawn(Player.Black), new Position(testPosition));
         gameState.setFakeBoard(board);
-        pawn = gameState.getPieceAt(testPosition);
+        pawn = (Pawn) gameState.getPieceAt(testPosition);
 
         resultMoves = pawn.getPossibleMoves(gameState.getPositionToPieceMap());
         assertEquals(1, resultMoves.size());
@@ -125,7 +125,7 @@ public class PawnTest {
         board.put(new Pawn(Player.White), new Position(testPosition));
         board.put(new Pawn(Player.Black), new Position("d4"));
         gameState.setFakeBoard(board);
-        pawn = gameState.getPieceAt(testPosition);
+        pawn = (Pawn) gameState.getPieceAt(testPosition);
 
         resultMoves = pawn.getPossibleMoves(gameState.getPositionToPieceMap());
         assertEquals(0, resultMoves.size());
@@ -136,7 +136,7 @@ public class PawnTest {
         board.put(new Pawn(Player.Black), new Position(testPosition));
         board.put(new Pawn(Player.White), new Position("d5"));
         gameState.setFakeBoard(board);
-        pawn = gameState.getPieceAt(testPosition);
+        pawn = (Pawn) gameState.getPieceAt(testPosition);
 
         resultMoves = pawn.getPossibleMoves(gameState.getPositionToPieceMap());
         assertEquals(0, resultMoves.size());
@@ -152,7 +152,7 @@ public class PawnTest {
         board.put(new Pawn(Player.White), new Position("b4"));
         board.put(new Pawn(Player.Black), new Position("d4"));
         gameState.setFakeBoard(board);
-        pawn = gameState.getPieceAt(testPosition);
+        pawn = (Pawn) gameState.getPieceAt(testPosition);
 
         resultMoves = pawn.getPossibleMoves(gameState.getPositionToPieceMap());
         assertEquals(2, resultMoves.size());
@@ -166,7 +166,7 @@ public class PawnTest {
         board.put(new Pawn(Player.Black), new Position("b5"));
         board.put(new Pawn(Player.White), new Position("d5"));
         gameState.setFakeBoard(board);
-        pawn = gameState.getPieceAt(testPosition);
+        pawn = (Pawn) gameState.getPieceAt(testPosition);
 
         resultMoves = pawn.getPossibleMoves(gameState.getPositionToPieceMap());
         assertEquals(2, resultMoves.size());

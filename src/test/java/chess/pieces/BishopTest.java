@@ -19,7 +19,7 @@ public class BishopTest {
 
     private GameState gameState;
     private Map<Piece, Position> board;
-    private Piece bishop;
+    private Bishop bishop;
     private String testPosition;
     private Set<String> resultMoves;
 
@@ -33,7 +33,7 @@ public class BishopTest {
     public void testGetPossibleMovesEdge() {
         testPosition = "c1";
         gameState.reset();
-        bishop = gameState.getPieceAt(testPosition);
+        bishop = (Bishop) gameState.getPieceAt(testPosition);
         resultMoves = bishop.getPossibleMoves(gameState.getPositionToPieceMap());
         assertEquals(0, resultMoves.size());
     }
@@ -43,7 +43,7 @@ public class BishopTest {
         testPosition = "a8";
         board.put(new Bishop(Player.White), new Position(testPosition));
         gameState.setFakeBoard(board);
-        bishop = gameState.getPieceAt(testPosition);
+        bishop = (Bishop) gameState.getPieceAt(testPosition);
         resultMoves = bishop.getPossibleMoves(gameState.getPositionToPieceMap());
         assertEquals(7, resultMoves.size());
     }
@@ -53,7 +53,7 @@ public class BishopTest {
         testPosition = "d5";
         board.put(new Bishop(Player.White), new Position(testPosition));
         gameState.setFakeBoard(board);
-        bishop = gameState.getPieceAt(testPosition);
+        bishop = (Bishop) gameState.getPieceAt(testPosition);
         resultMoves = bishop.getPossibleMoves(gameState.getPositionToPieceMap());
         assertEquals(13, resultMoves.size());
     }
@@ -69,7 +69,7 @@ public class BishopTest {
         board.put(new Pawn(Player.Black), new Position("f3"));
         gameState.setFakeBoard(board);
 
-        bishop = gameState.getPieceAt(testPosition);
+        bishop = (Bishop) gameState.getPieceAt(testPosition);
         resultMoves = bishop.getPossibleMoves(gameState.getPositionToPieceMap());
         assertEquals(6, resultMoves.size());
     }

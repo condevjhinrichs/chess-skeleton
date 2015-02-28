@@ -11,14 +11,14 @@ import java.util.Set;
  * The Pawn
  */
 public class Pawn extends Piece {
-    public Pawn(Player owner) {
-        super(owner);
-    }
 
     private Map<Position, Piece> positionToPieceMap;
     private Set<String> possibleMoves;
-    private int MOVEMENTS[][]={{0, 1}, {0, 2}, {-1, 1}, {1, 1}};
+    private final int MOVEMENTS[][]={{0, 1}, {0, 2}, {-1, 1}, {1, 1}};
 
+    public Pawn(Player owner) {
+        super(owner);
+    }
 
     @Override
     protected char getIdentifyingCharacter() {
@@ -28,11 +28,9 @@ public class Pawn extends Piece {
     /**
      * Gets the set of the piece's valid possible moves given the current state of the board
      *
-     *
      * @param positionPieceMap
      * @return Set of Strings of the form:  "currentPosition possiblePosition"
      */
-
     @Override
     public Set<String> getPossibleMoves(Map<Position, Piece> positionPieceMap) {
         positionToPieceMap = positionPieceMap;
@@ -88,6 +86,11 @@ public class Pawn extends Piece {
         }
     }
 
+    /**
+     * Determines whether a Black or White Pawn is in its initial position
+     *
+     * @return boolean - if the Pawn is in its initial position
+     */
     private boolean pieceIsInHomeRow() {
         boolean whiteInHomeRow = (getOwner() == Player.White) && (getPosition().getRow() == 2);
         boolean blackInHomeRow = (getOwner() == Player.Black) && (getPosition().getRow() == 7);
@@ -95,6 +98,13 @@ public class Pawn extends Piece {
         return whiteInHomeRow || blackInHomeRow;
     }
 
+    /**
+     * Given a newPosition to add to the possible moves set, this method forms the actual String representing the move
+     * and adds it to the set
+     * Ex: "c2 c4"
+     *
+     * @param newPosition
+     */
     private void addPossibleMove(Position newPosition) {
         possibleMoves.add(getPosition().toString() + " " + newPosition.toString());
     }
