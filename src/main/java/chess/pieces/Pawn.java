@@ -17,6 +17,7 @@ public class Pawn extends Piece {
 
     private Map<Position, Piece> positionToPieceMap;
     private Set<String> possibleMoves;
+    private int MOVEMENTS[][]={{0, 1}, {0, 2}, {-1, 1}, {1, 1}};
 
 
     @Override
@@ -37,20 +38,9 @@ public class Pawn extends Piece {
         positionToPieceMap = positionPieceMap;
         possibleMoves = Sets.newHashSet();
 
-        // one space forward
-        addMoveIfValid(0, 1);
-
-        // two spaces forward
-        if (pieceIsInHomeRow()) {
-            addMoveIfValid(0, 2);
+        for (int[] movement : MOVEMENTS) {
+            addMoveIfValid(movement[0], movement[1]);
         }
-
-        // left diagonal
-        addMoveIfValid(-1, 1);
-
-        // right diagonal
-        addMoveIfValid(1, 1);
-
 
         return possibleMoves;
     }
@@ -62,6 +52,11 @@ public class Pawn extends Piece {
      * @param rowMovement
      */
     private void addMoveIfValid(int colMovement, int rowMovement) {
+        // return if the pawn is trying to move two ahead but is not in the home row
+        if (rowMovement == 2 && !pieceIsInHomeRow()) {
+            return;
+        }
+
         // since our board is using absolute coordinates, the Black player's movement needs to flip in direction
         if (getOwner() == Player.Black) {
             colMovement = -colMovement;

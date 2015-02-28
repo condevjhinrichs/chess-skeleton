@@ -46,7 +46,6 @@ public class PawnTest {
         assertTrue(resultMoves.contains("a2 a3"));
         assertTrue(resultMoves.contains("a2 a4"));
 
-        
         // test black
         testPosition = "a7"; // on edge of board
         board.put(new Pawn(Player.Black), new Position(testPosition));
