@@ -3,7 +3,6 @@ package chess;
 
 import chess.pieces.*;
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Predicate;
 import com.google.common.collect.Maps;
 
 import java.util.HashMap;
@@ -113,7 +112,7 @@ public class GameState {
     public Set<String> getMovesList() {
         // get the current player's pieces
         Map<Position, Piece> currentPlayerPieces =
-                Maps.filterEntries(positionToPieceMap, new PlayerPieces(getCurrentPlayer()));
+                Maps.filterEntries(positionToPieceMap, new PlayerPiece(getCurrentPlayer()));
 
         Set<String> possibleMoves = new HashSet<String>();
         // get the possible moves for each piece
@@ -145,27 +144,5 @@ public class GameState {
     private void placePiece(Piece piece, Position position) {
         positionToPieceMap.put(position, piece);
         piece.setPosition(position);
-    }
-
-
-    /**
-     *  A Guava Predicate to extract the current player's pieces from the positionToPieceMap
-     *
-     *  Example found here:
-     *  http://stackoverflow.com/questions/17330487/creating-subset-of-hashmap-based-on-some-specifications
-     */
-    private static class PlayerPieces implements Predicate<Map.Entry<Position, Piece>> {
-
-        // the Player whose entries we return
-        private Player player;
-
-        private PlayerPieces(Player player) {
-            this.player = player;
-        }
-
-        @Override
-        public boolean apply(Map.Entry<Position, Piece> input) {
-            return input.getValue().getOwner().equals(player);
-        }
     }
 }

@@ -14,7 +14,7 @@ public class Pawn extends Piece {
 
     private Map<Position, Piece> positionToPieceMap;
     private Set<String> possibleMoves;
-    private final int MOVEMENTS[][]={{0, 1}, {0, 2}, {-1, 1}, {1, 1}};
+    private final int MOVEMENTS[][] = { {0, 1}, {0, 2}, {-1, 1}, {1, 1} };
 
     public Pawn(Player owner) {
         super(owner);
@@ -55,7 +55,8 @@ public class Pawn extends Piece {
             return;
         }
 
-        // since our board is using absolute coordinates, the Black player's movement needs to flip in direction
+        // since our board is using absolute coordinates and direction matters for pawns,
+        // the Black player's movement needs to flip in direction
         if (getOwner() == Player.Black) {
             colMovement = -colMovement;
             rowMovement = -rowMovement;

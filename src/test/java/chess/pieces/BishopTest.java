@@ -30,7 +30,7 @@ public class BishopTest {
     }
 
     @Test
-    public void testGetPossibleMovesEdge() {
+    public void testGetPossibleMovesGameInit() {
         testPosition = "c1";
         gameState.reset();
         bishop = (Bishop) gameState.getPieceAt(testPosition);

@@ -2,7 +2,6 @@ package chess.pieces;
 
 import chess.Player;
 import chess.Position;
-import com.google.common.collect.Sets;
 
 import java.util.Map;
 import java.util.Set;
@@ -12,7 +11,7 @@ import java.util.Set;
  */
 public class Rook extends Piece {
 
-    private final int MOVEMENTS[][]={{0, 1}, {0, -1}, {1, 0}, {-1, 0}};
+    private final int MOVEMENTS[][] = { {0, 1}, {0, -1}, {1, 0}, {-1, 0} };
 
     public Rook(Player owner) {
         super(owner);

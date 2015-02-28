@@ -63,31 +63,33 @@ public class PawnTest {
         // There's a third possible move if an enemy is to the diagonal
 
         // test white
-        testPosition = "h2"; // on edge of board
+        testPosition = "g2"; // on edge of board
         board.put(new Pawn(Player.White), new Position(testPosition));
-        board.put(new Pawn(Player.Black), new Position("g3"));
+        board.put(new Pawn(Player.Black), new Position("f3"));
+        board.put(new Pawn(Player.White), new Position("h3"));
         gameState.setFakeBoard(board);
         pawn = (Pawn) gameState.getPieceAt(testPosition);
 
         resultMoves = pawn.getPossibleMoves(gameState.getPositionToPieceMap());
         assertEquals(3, resultMoves.size());
-        assertTrue(resultMoves.contains("h2 h3"));
-        assertTrue(resultMoves.contains("h2 h4"));
-        assertTrue(resultMoves.contains("h2 g3"));
+        assertTrue(resultMoves.contains("g2 g3"));
+        assertTrue(resultMoves.contains("g2 g4"));
+        assertTrue(resultMoves.contains("g2 f3"));
 
 
         // test black
-        testPosition = "h7"; // on edge of board
+        testPosition = "g7"; // on edge of board
         board.put(new Pawn(Player.Black), new Position(testPosition));
-        board.put(new Pawn(Player.White), new Position("g6"));
+        board.put(new Pawn(Player.White), new Position("f6"));
+        board.put(new Pawn(Player.Black), new Position("h6"));
         gameState.setFakeBoard(board);
         pawn = (Pawn) gameState.getPieceAt(testPosition);
 
         resultMoves = pawn.getPossibleMoves(gameState.getPositionToPieceMap());
         assertEquals(3, resultMoves.size());
-        assertTrue(resultMoves.contains("h7 h6"));
-        assertTrue(resultMoves.contains("h7 h5"));
-        assertTrue(resultMoves.contains("h7 g6"));
+        assertTrue(resultMoves.contains("g7 g6"));
+        assertTrue(resultMoves.contains("g7 g5"));
+        assertTrue(resultMoves.contains("g7 f6"));
     }
 
     @Test
@@ -140,37 +142,5 @@ public class PawnTest {
 
         resultMoves = pawn.getPossibleMoves(gameState.getPositionToPieceMap());
         assertEquals(0, resultMoves.size());
-    }
-
-    @Test
-    public void testGetPossibleMovesDiagonal() {
-        // Pawns can move diagonally one square to capture enemies
-
-        // test white
-        testPosition = "c3";
-        board.put(new Pawn(Player.White), new Position(testPosition));
-        board.put(new Pawn(Player.White), new Position("b4"));
-        board.put(new Pawn(Player.Black), new Position("d4"));
-        gameState.setFakeBoard(board);
-        pawn = (Pawn) gameState.getPieceAt(testPosition);
-
-        resultMoves = pawn.getPossibleMoves(gameState.getPositionToPieceMap());
-        assertEquals(2, resultMoves.size());
-        assertTrue(resultMoves.contains("c3 c4"));
-        assertTrue(resultMoves.contains("c3 d4"));
-
-
-        // test black
-        testPosition = "c6";
-        board.put(new Pawn(Player.Black), new Position(testPosition));
-        board.put(new Pawn(Player.Black), new Position("b5"));
-        board.put(new Pawn(Player.White), new Position("d5"));
-        gameState.setFakeBoard(board);
-        pawn = (Pawn) gameState.getPieceAt(testPosition);
-
-        resultMoves = pawn.getPossibleMoves(gameState.getPositionToPieceMap());
-        assertEquals(2, resultMoves.size());
-        assertTrue(resultMoves.contains("c6 c5"));
-        assertTrue(resultMoves.contains("c6 d5"));
     }
 }

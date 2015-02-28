@@ -2,7 +2,6 @@ package chess.pieces;
 
 import chess.Player;
 import chess.Position;
-import com.google.common.collect.Sets;
 
 import java.util.Map;
 import java.util.Set;
@@ -12,7 +11,7 @@ import java.util.Set;
  */
 public class Bishop extends Piece {
 
-    private final int MOVEMENTS[][]={{1, 1}, {1, -1}, {-1, -1}, {-1, 1}};
+    private final int MOVEMENTS[][] = { {1, 1}, {1, -1}, {-1, -1}, {-1, 1} };
 
     public Bishop(Player owner) {
         super(owner);
@@ -31,7 +30,6 @@ public class Bishop extends Piece {
      */
     @Override
     public Set<String> getPossibleMoves(Map<Position, Piece> positionToPieceMap) {
-
         return getPossibleMoves(positionToPieceMap, MOVEMENTS);
     }
 

@@ -1,7 +1,9 @@
 package chess.pieces;
 
 import chess.Player;
+import chess.PlayerPiece;
 import chess.Position;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
 import java.util.HashSet;
@@ -47,29 +49,21 @@ public abstract class Piece {
     protected abstract char getIdentifyingCharacter();
 
     /**
-     * Method called by a Piece subclass to pass the current state of the board and its unique set of movements
+     * Iterates through each of a Piece's movement possibilities and finds which are valid
      *
      * @param positionPieceMap
-     * @param movements - a 2D array holding the subclass's set of potential movements
-     * @return Set of Strings of the form:  "currentPosition possiblePosition"
+     * @param movements - a 2D array holding a set of potential movements
+     * @return Set of strings of the form:  "currentPosition possiblePosition"
      */
-    public Set<String> getPossibleMoves(Map<Position, Piece> positionPieceMap, int[][] movements) {
+    protected Set<String> getPossibleMoves(Map<Position, Piece> positionPieceMap, int[][] movements) {
         MOVEMENTS = movements;
         positionToPieceMap = positionPieceMap;
-        return getPossibleMoves();
-    }
-
-    /**
-     * Iterate through each of a Piece's movement possibilities, calling addMoveIfValid() for each one
-     *
-     * @return Set of Strings of the form:  "currentPosition possiblePosition"
-     */
-    private Set<String> getPossibleMoves() {
         possibleMoves = Sets.newHashSet();
 
         boolean shouldContinue;
+        int step;
         for (int[] movement : MOVEMENTS) {
-            int step = 1;
+            step = 1;
             shouldContinue = true;
             while(shouldContinue) {
                 // multiplying the row and column movements by 'step' simulates stepping along a movement direction
@@ -81,7 +75,7 @@ public abstract class Piece {
     }
 
     /**
-     * Adds a requested movement to the Set of possibleMoves if and only if it's a valid move
+     * Adds a requested movement to the set of possible moves if and only if it's a valid move
      *
      * @param colMovement
      * @param rowMovement
@@ -101,32 +95,32 @@ public abstract class Piece {
         // get the Piece that is possibly already in that new Position
         Piece pieceAtPosition = positionToPieceMap.get(newPosition);
 
-        // add the new position if there is no piece there and return that there could be more possible moves
+        // add the new Position if there is no Piece there and return that there could be more possible moves
         if (pieceAtPosition == null) {
             addPossibleMove(newPosition);
             return true;
         }
 
-        // add the new position if there is an opponent there and return that there are no more possible moves
+        // add the new position if there is an enemy there
         if (pieceAtPosition != null && pieceAtPosition.getOwner() != getOwner()) {
             addPossibleMove(newPosition);
-            return false;
         }
 
-        // remaining case- ally is in the new position.  Don't add and return that there are no more possible moves
+        // return that there are no more possible moves if an ally or enemy was in the position
         return false;
     }
 
     /**
-     * Given a newPosition to add to the possible moves set, this method forms the actual String representing the move
-     * and adds it to the set
-     * Ex: "c2 c4"
+     * Given a new position to add to the possible moves set, this method forms the string representing the move
+     * and adds it to the set (ex: "c2 c4")
      *
      * @param newPosition
      */
     private void addPossibleMove(Position newPosition) {
         possibleMoves.add(getPosition().toString() + " " + newPosition.toString());
     }
+
+
 
     /**
      * Method exists only to be overridden
