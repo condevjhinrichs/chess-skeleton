@@ -21,7 +21,6 @@ import static org.mockito.Mockito.*;
 public class CLITest {
 
     private CLI cli;
-    private GameState gameState;
 
     @Mock
     private PrintStream testOut;

@@ -1,9 +1,7 @@
 package chess.pieces;
 
 import chess.Player;
-import chess.PlayerPiece;
 import chess.Position;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
 import java.util.HashSet;
@@ -36,6 +34,10 @@ public abstract class Piece {
 
     public Player getOwner() {
         return owner;
+    }
+
+    public Player getOpponent() {
+        return getOwner() == Player.White ? Player.Black : Player.White;
     }
 
     public Position getPosition() {

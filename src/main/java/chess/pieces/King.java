@@ -1,7 +1,7 @@
 package chess.pieces;
 
 import chess.Player;
-import chess.PlayerPiece;
+import chess.PlayerFilter;
 import chess.Position;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -29,18 +29,42 @@ public class King extends Piece {
     }
 
     /**
-     * Gets the set of the piece's valid possible moves given the current state of the board
-     *
+     * Gets the set of the king's valid possible moves given the current state of the board
      * @param positionPieceMap
-     * @return Set of Strings of the form:  "currentPosition possiblePosition"
+     * @return Set of Strings of the form:  "a2 a4"
      */
     @Override
     public Set<String> getPossibleMoves(Map<Position, Piece> positionPieceMap) {
+        return getPossibleMoves(positionPieceMap, true);
+    }
+
+    /**
+     * Gets the set of a king's possible moves including those that would put the king in check
+     * This is used in determining the opponent's set of moves to see if the game is in check.
+     * An opponent king putting itself in check to capture the current king would be a valid move
+     * @param positionPieceMap
+     * @return
+     */
+    public Set<String> getPossibleMovesIgnoringCheck(Map<Position, Piece> positionPieceMap) {
+        return getPossibleMoves(positionPieceMap, false);
+    }
+
+    /**
+     * Gets the set of the king's valid possible moves given the current state of the board
+     * If this method is being called to determine if the current player is in check,
+     * this method will be called in the context of determining the current player's enemy's possible moves,
+     * in which case we don't want to protect against possible moves putting the king in check.
+     * The boolean 'testCheck' sets this flag.
+     * @param positionPieceMap
+     * @param testCheck- if false, don't check if the king would be in check in determining whether the move is valid
+     * @return Set of Strings of the form:  "a2 a4"
+     */
+    private Set<String> getPossibleMoves(Map<Position, Piece> positionPieceMap, boolean testCheck) {
         positionToPieceMap = positionPieceMap;
         possibleMoves = Sets.newHashSet();
 
         for (int[] movement : MOVEMENTS) {
-            addMoveIfValid(movement[0], movement[1]);
+            addMoveIfValid(movement[0], movement[1], testCheck);
         }
 
         return possibleMoves;
@@ -52,7 +76,7 @@ public class King extends Piece {
      * @param colMovement
      * @param rowMovement
      */
-    private void addMoveIfValid(int colMovement, int rowMovement) {
+    private void addMoveIfValid(int colMovement, int rowMovement, boolean testCheck) {
         // return if the requested movement is not on the board
         if (!getPosition().isOnBoard(colMovement, rowMovement)) {
             return;
@@ -72,7 +96,7 @@ public class King extends Piece {
         }
 
         // return if moving to the new Position would put the king in check
-        if (wouldBeInCheck(newPosition)) {
+        if (testCheck && wouldBeInCheck(newPosition)) {
             return;
         }
 
@@ -98,7 +122,7 @@ public class King extends Piece {
      * @return
      */
     private boolean wouldBeInCheck(Position kingPosition) {
-        Set<Position> enemyMovePositions = getEnemyMovePositions(kingPosition);
+        Set<Position> enemyMovePositions = getHypotheticalEnemyMoves(kingPosition);
         return enemyMovePositions.contains(kingPosition);
     }
 
@@ -108,14 +132,14 @@ public class King extends Piece {
      * @param testPosition-
      * @return
      */
-    private Set<Position> getEnemyMovePositions(Position testPosition) {
-        Player enemy = getOwner() == Player.White ? Player.Black : Player.White;
+    private Set<Position> getHypotheticalEnemyMoves(Position testPosition) {
+        Player enemy = getOpponent();
         Piece currentPlayerKing = new King(getOwner());
         Set<Position> possibleEnemyMoves = new HashSet<Position>();
         Map<Position, Piece> kingInTestPositionMap;
 
         // get the enemy's pieces
-        Map<Position, Piece> enemyPieces = Maps.filterEntries(positionToPieceMap, new PlayerPiece(enemy));
+        Map<Position, Piece> enemyPieces = Maps.filterEntries(positionToPieceMap, new PlayerFilter(enemy));
 
         // with the current player King in the test position,
         // get the Position for each move of each enemy Piece's possible moves
@@ -124,11 +148,18 @@ public class King extends Piece {
 
             // put the king in the position under test
             kingInTestPositionMap = Maps.newHashMap(positionToPieceMap);
-            kingInTestPositionMap.remove(testPosition);
             kingInTestPositionMap.put(testPosition, currentPlayerKing);
 
+            Set<String> pieceMoves;
+            if (piece.getClass() == King.class) {
+                King king = (King) piece;
+                pieceMoves = king.getPossibleMoves(kingInTestPositionMap, false);
+            } else {
+                pieceMoves = piece.getPossibleMoves(kingInTestPositionMap);
+            }
+
             // add the possible moves for the current piece to the final possibleEnemyMoves
-            for(String move : piece.getPossibleMoves(kingInTestPositionMap)) {
+            for(String move : pieceMoves) {
                 // a move is of the form "a2 d4"- "initial final"- and we want the 'final' Position
                 possibleEnemyMoves.add(new Position(move.substring(3, 5)));
             }

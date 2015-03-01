@@ -70,11 +70,9 @@ public class CLI {
                     writeOutput("Current Game:");
                 } else if (input.equals("list")) {
                     writeOutput(gameState.getCurrentPlayer() + "'s Possible Moves:");
-                    showMoves();
+                    writeOutput(getMovesAsString());
                 } else if (input.startsWith("move")) {
-                    if(makeMoveIfValid(input)) {
-                        gameState.switchCurrentPlayer();
-                    } else {
+                    if (!makeMove(input)) {
                         writeOutput("Invalid move. Type 'list' for your possible moves or 'help' for more commands.");
                     }
                 } else {
@@ -103,10 +101,6 @@ public class CLI {
         writeOutput("    'move <colrow> <colrow>'     Make a move");
     }
 
-    private void showMoves() {
-        writeOutput(getMovesAsString());
-    }
-
     /**
      * Display the board for the user(s)
      */
@@ -130,8 +124,7 @@ public class CLI {
         StringBuilder builder = new StringBuilder();
         builder.append(NEWLINE);
 
-        List<String> possibleMoves = Lists.newArrayList(gameState.getMovesList());
-        Collections.sort(possibleMoves);
+        List<String> possibleMoves = gameState.getPossibleMovesList();
 
         for(String move : possibleMoves) {
             builder.append(move);
@@ -141,7 +134,7 @@ public class CLI {
         return builder.toString();
     }
 
-    private boolean makeMoveIfValid(String input) {
+    private boolean makeMove(String input) {
         String requestedMove = input.trim().substring(5, input.length()).trim();
         return gameState.makeMoveIfValid(requestedMove);
     }

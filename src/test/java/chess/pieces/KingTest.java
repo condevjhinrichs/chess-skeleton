@@ -101,4 +101,19 @@ public class KingTest {
         assertEquals(1, resultMoves.size());
         assertTrue(resultMoves.contains("d1 e2"));
     }
+
+    @Test
+    public void testGetPossibleMovesIgnoringCheck() {
+        board.put(new King(Player.White), new Position("d1"));
+        board.put(new Rook(Player.White), new Position("a6"));
+        board.put(new King(Player.Black), new Position("d8"));
+        board.put(new Queen(Player.Black), new Position("c1"));
+        board.put(new Bishop(Player.Black), new Position("d2"));
+        gameState.setFakeBoard(board);
+
+        // White king has 1 possible move
+        King whiteKing = (King) gameState.getPieceAt("d1");
+        assertEquals(1, whiteKing.getPossibleMoves(gameState.getPositionToPieceMap()).size());
+        assertEquals(5, whiteKing.getPossibleMovesIgnoringCheck(gameState.getPositionToPieceMap()).size());
+    }
 }

@@ -3,11 +3,13 @@ package chess;
 
 import chess.pieces.*;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -38,13 +40,16 @@ public class GameState {
         return currentPlayer;
     }
 
-    public void setCurrentPlayer(Player player) {
+    private void setCurrentPlayer(Player player) {
         currentPlayer = player;
     }
 
     public void switchCurrentPlayer() {
-        Player newPlayer = getCurrentPlayer() == Player.White ? Player.Black : Player.White;
-        setCurrentPlayer(newPlayer);
+        setCurrentPlayer(getOpponent());
+    }
+
+    public Player getOpponent() {
+        return getCurrentPlayer() == Player.White ? Player.Black : Player.White;
     }
 
     public Map<Position, Piece> getPositionToPieceMap() {
@@ -103,26 +108,119 @@ public class GameState {
     }
 
     /**
-     * Get all the possible moves for the current player
-     * @return Set of Strings, each of which is "initial position final position"
+     * Gets a sorted List of the current player's possible game moves
+     * @return sorted List of Strings "a2 a4"
+     */
+    public List<String> getPossibleMovesList() {
+        List<String> possibleMoves = Lists.newArrayList(getMovesList());
+        Collections.sort(possibleMoves);
+        return possibleMoves;
+    }
+
+    /**
+     * Gets the Set of all possible moves for the current player
+     * @return Set of Strings representing moves- "c2 d3"
      */
     public Set<String> getMovesList() {
-        // get the current player's pieces
-        Map<Position, Piece> currentPlayerPieces =
-                Maps.filterEntries(positionToPieceMap, new PlayerPiece(getCurrentPlayer()));
+        // if the current player is in check, return the possible moves of the king only
+        if (isInCheck()) {
+            return getCurrentPlayerKing().getPossibleMoves(positionToPieceMap);
+        }
 
+        // otherwise return all Pieces' possible moves
+        return getPlayerMoves();
+    }
+
+    /**
+     * Gets the current player's king
+     * @return King
+     */
+    private King getCurrentPlayerKing() {
+        King king = new King(getCurrentPlayer());
+        for (Map.Entry<Position, Piece> positionPiece : positionToPieceMap.entrySet()) {
+            if (positionPiece.getValue().getClass() == King.class &&
+                    positionPiece.getValue().getOwner() == getCurrentPlayer()) {
+                king = (King) positionPiece.getValue();
+                break;
+            }
+        }
+        return king;
+    }
+
+    /**
+     * Determines whether the current player is in check
+     * @return boolean
+     */
+    public boolean isInCheck() {
+        // player is in check iff their king's position is in the set of positions of the opponent's possible moves
+        String kingPosition = getCurrentPlayerKing().getPosition().toString();
+        return getOpponentMovesPositionsOnly().contains(kingPosition);
+    }
+
+    /**
+     * Finds the Set of all possible moves for the current player's pieces
+     * @return Set of Strings representing all of the possible moves- "a2 c4"
+     */
+    private Set<String> getPlayerMoves() {
+        Map<Position, Piece> currentPlayerPieces = Maps.filterEntries(positionToPieceMap, new PlayerFilter
+                (getCurrentPlayer()));
+        return getPlayerMoves(currentPlayerPieces, false);
+    }
+
+    /**
+     * Finds the Set of positions of all the opponent's possible moves for the gameState
+     * @return Set of Positions as Strings
+     */
+    private Set<String> getOpponentMovesPositionsOnly() {
+        Map<Position, Piece> opponentPieces = Maps.filterEntries(positionToPieceMap, new PlayerFilter(getOpponent()));
+        return getPlayerMoves(opponentPieces, true);
+    }
+
+    /**
+     * Finds the Set of all moves or the Set of all positions a player's pieces can move to
+     * @param playerPieces
+     * @param testingCheck- boolean- false will give a Set of full move Strings- "a2 c4"
+     *                                true will give a Set of only the "c4"
+     * @return Set of Strings
+     */
+    private Set<String> getPlayerMoves(Map<Position, Piece> playerPieces, boolean testingCheck) {
         Set<String> possibleMoves = new HashSet<String>();
-        // get the possible moves for each piece
-        for(Map.Entry<Position, Piece> positionPiece : currentPlayerPieces.entrySet()) {
-            Piece piece = positionPiece.getValue();
 
-            // add the possible moves for the current piece to the final possibleMoves
-            for(String move : piece.getPossibleMoves(positionToPieceMap)) {
+        for(Map.Entry<Position, Piece> positionPiece : playerPieces.entrySet()) {
+            Set<String> pieceMoves = getPieceMovesInContext(positionPiece.getValue(), testingCheck);
+
+            // add the possible moves or positions for the current piece to possibleMoves
+            for(String move : pieceMoves) {
+                if (testingCheck) {
+                    move = move.substring(3, 5);
+                }
                 possibleMoves.add(move);
             }
         }
-        // return the possible moves list
+        // return the possible moves Set
         return possibleMoves;
+    }
+
+    /**
+     * ignoreCheck true implies we're calling this method to get an opponent piece's moves for the purpose of
+     * determining whether the game is in check
+     * We're getting the opponent's moves to see if they can take the king,
+     * so we want to get the opponent king's moves without filtering out moves that would be going into check
+     * @param piece
+     * @param ignoreCheck- boolean
+     * @return
+     */
+    private Set<String> getPieceMovesInContext(Piece piece, boolean ignoreCheck) {
+        Set<String> pieceMoves;
+
+        if (ignoreCheck && piece.getClass() == King.class) {
+            King king = (King) piece;
+            pieceMoves = king.getPossibleMovesIgnoringCheck(positionToPieceMap);
+        } else {
+            pieceMoves = piece.getPossibleMoves(positionToPieceMap);
+        }
+
+        return pieceMoves;
     }
 
     /**
@@ -133,23 +231,6 @@ public class GameState {
     public Piece getPieceAt(String colrow) {
         Position position = new Position(colrow);
         return getPieceAt(position);
-    }
-
-    /**
-     * Removes a Piece from the board at the position given in String form
-     * @param colrow String representing a board position- "c5"
-     */
-    private void removePieceAt(String colrow) {
-        Position position = new Position(colrow);
-        removePieceAt(position);
-    }
-
-    /**
-     * Removes a Piece from the board at the given Position
-     * @param position- Position object where the Piece will be removed
-     */
-    private void removePieceAt(Position position) {
-        positionToPieceMap.remove(position);
     }
 
     /**
@@ -172,13 +253,30 @@ public class GameState {
     }
 
     /**
+     * Removes a Piece from the board at the position given in String form
+     * @param colrow String representing a board position- "c5"
+     */
+    private void removePieceAt(String colrow) {
+        Position position = new Position(colrow);
+        removePieceAt(position);
+    }
+
+    /**
+     * Removes a Piece from the board at the given Position
+     * @param position- Position object where the Piece will be removed
+     */
+    private void removePieceAt(Position position) {
+        positionToPieceMap.remove(position);
+    }
+
+    /**
      * Updates the positionToPieceMap given a valid game move
      * @param move- String of the form "initialPosition finalPosition"
      * @return- boolean for whether or not the requested move was valid
      */
     public boolean makeMoveIfValid(String move) {
         // get the set of the current player's possible moves
-        Set<String> possibleMoves = Sets.newHashSet(getMovesList());
+        Set<String> possibleMoves = getMovesList();
 
         // if the set of possible moves doesn't contain the requested move- it's invalid input
         if (!possibleMoves.contains(move)) {
@@ -188,9 +286,12 @@ public class GameState {
         String fromPosition = move.substring(0, 2);
         String toPosition = move.substring(3, 5);
 
-        // remove the Piece from its original Position and place it in its new Position
-        removePieceAt(fromPosition);
+        // place the Piece in its new Position and remove it from the old one
         placePiece(getPieceAt(fromPosition), new Position(toPosition));
+        removePieceAt(fromPosition);
+
+        // on a successful move- switch the current player
+        switchCurrentPlayer();
         return true;
     }
 }
