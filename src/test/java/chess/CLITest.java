@@ -20,6 +20,9 @@ import static org.mockito.Mockito.*;
 @RunWith(MockitoJUnitRunner.class)
 public class CLITest {
 
+    private CLI cli;
+    private GameState gameState;
+
     @Mock
     private PrintStream testOut;
 
@@ -75,9 +78,54 @@ public class CLITest {
         runCliWithInput("list");
         List<String> output = captureOutput();
 
-        assertEquals("It should have printed a title of 'White's Possible Moves:'", 23, output.get(4).length());
+        assertEquals("It should print a title for the action", "White's Possible Moves:", output.get(4));
+        assertTrue("It should print the moves list", output.get(5).contains("a2 a4"));
         assertEquals("It should have printed the board twice", output.get(2), output.get(output.size() - 2));
     }
+
+    @Test
+    public void testMoveRejectsInvalidInput() {
+        testInvalidInput("move c5 g8");
+        testInvalidInput("movea2 a3");
+    }
+
+    private void testInvalidInput(String input) {
+        runCliWithInput(input);
+        List<String> output = captureOutput();
+        String boardBeforeMove = output.get(2);
+        String boardAfterMove = output.get(5);
+
+        assertTrue("The user should be given a message", output.get(4).contains("Invalid move"));
+        assertEquals("The board should not have changed", boardBeforeMove, boardAfterMove);
+        assertEquals("It should still be White's turn", "White's Move", output.get(6));
+    }
+
+    @Test
+    public void testMoveForValidInput() throws Exception {
+        testValidInput("move a2 a4");
+        testValidInput("  move    a2 a4");
+        testValidInput("    move    a2    a4  ");
+    }
+
+    private void testValidInput(String input) {
+        runCliWithInput(input);
+        List<String> output = captureOutput();
+        String boardBeforeMove = output.get(2);
+        String boardAfterMove = output.get(4);
+
+        assertTrue("The board should be updated", !boardBeforeMove.equals(boardAfterMove));
+        assertEquals("It should be Black's turn", "Black's Move", output.get(5));
+    }
+
+    @Test
+    public void testListCommandAfterMove() throws Exception {
+        runCliWithInput("move a2 a4", "list");
+        List<String> output = captureOutput();
+
+        assertEquals("It should print a title", "Black's Possible Moves:", output.get(6));
+        assertTrue("It should print the moves list", output.get(7).contains("f7 f5"));
+    }
+
 
     private List<String> captureOutput() {
         ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
@@ -95,7 +143,7 @@ public class CLITest {
         }
 
         ByteArrayInputStream in = new ByteArrayInputStream(builder.toString().getBytes());
-        CLI cli = new CLI(in, testOut);
+        cli = new CLI(in, testOut);
         cli.startEventLoop();
 
         return cli;

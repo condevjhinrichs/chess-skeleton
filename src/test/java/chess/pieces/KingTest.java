@@ -4,7 +4,6 @@ import chess.GameState;
 import chess.Player;
 import chess.Position;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 import org.junit.Before;
 import org.junit.Test;
 

@@ -1,8 +1,11 @@
 package chess;
 
 import chess.pieces.Piece;
+import com.google.common.collect.Lists;
 
 import java.io.*;
+import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -55,6 +58,7 @@ public class CLI {
             if (input == null) {
                 break; // No more input possible; this is the only way to exit the event loop
             } else if (input.length() > 0) {
+                input = input.trim();
                 if (input.equals("help")) {
                     showCommands();
                 } else if (input.equals("new")) {
@@ -68,7 +72,11 @@ public class CLI {
                     writeOutput(gameState.getCurrentPlayer() + "'s Possible Moves:");
                     showMoves();
                 } else if (input.startsWith("move")) {
-                    writeOutput("====> Move Is Not Implemented (yet) <====");
+                    if(makeMoveIfValid(input)) {
+                        gameState.switchCurrentPlayer();
+                    } else {
+                        writeOutput("Invalid move. Type 'list' for your possible moves or 'help' for more commands.");
+                    }
                 } else {
                     writeOutput("I didn't understand that.  Type 'help' for a list of commands.");
                 }
@@ -122,13 +130,20 @@ public class CLI {
         StringBuilder builder = new StringBuilder();
         builder.append(NEWLINE);
 
-        Set<String> moves = gameState.getMovesList();
-        for(String move : moves) {
+        List<String> possibleMoves = Lists.newArrayList(gameState.getMovesList());
+        Collections.sort(possibleMoves);
+
+        for(String move : possibleMoves) {
             builder.append(move);
             builder.append(NEWLINE);
         }
 
         return builder.toString();
+    }
+
+    private boolean makeMoveIfValid(String input) {
+        String requestedMove = input.trim().substring(5, input.length()).trim();
+        return gameState.makeMoveIfValid(requestedMove);
     }
 
 

@@ -4,6 +4,7 @@ package chess;
 import chess.pieces.*;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -35,6 +36,15 @@ public class GameState {
 
     public Player getCurrentPlayer() {
         return currentPlayer;
+    }
+
+    public void setCurrentPlayer(Player player) {
+        currentPlayer = player;
+    }
+
+    public void switchCurrentPlayer() {
+        Player newPlayer = getCurrentPlayer() == Player.White ? Player.Black : Player.White;
+        setCurrentPlayer(newPlayer);
     }
 
     public Map<Position, Piece> getPositionToPieceMap() {
@@ -83,9 +93,7 @@ public class GameState {
     }
 
     /**
-     *
      * Provide a way to create a specific board scenario for testing purposes
-     *
      */
     @VisibleForTesting
     public void setFakeBoard(Map<Piece, Position> piecePositionMap) {
@@ -95,19 +103,8 @@ public class GameState {
     }
 
     /**
-     * Get the piece at the position specified by the String
-     * @param colrow The string indication of position; i.e. "d5"
-     * @return The piece at that position, or null if it does not exist.
-     */
-    public Piece getPieceAt(String colrow) {
-        Position position = new Position(colrow);
-        return getPieceAt(position);
-    }
-
-    /**
      * Get all the possible moves for the current player
-     *
-     * @return Set of Strings, each of which has the initial position and final position
+     * @return Set of Strings, each of which is "initial position final position"
      */
     public Set<String> getMovesList() {
         // get the current player's pieces
@@ -124,7 +121,35 @@ public class GameState {
                 possibleMoves.add(move);
             }
         }
+        // return the possible moves list
         return possibleMoves;
+    }
+
+    /**
+     * Get the piece at the position specified by the String
+     * @param colrow The string indication of position; i.e. "d5"
+     * @return The piece at that position, or null if it does not exist.
+     */
+    public Piece getPieceAt(String colrow) {
+        Position position = new Position(colrow);
+        return getPieceAt(position);
+    }
+
+    /**
+     * Removes a Piece from the board at the position given in String form
+     * @param colrow String representing a board position- "c5"
+     */
+    private void removePieceAt(String colrow) {
+        Position position = new Position(colrow);
+        removePieceAt(position);
+    }
+
+    /**
+     * Removes a Piece from the board at the given Position
+     * @param position- Position object where the Piece will be removed
+     */
+    private void removePieceAt(Position position) {
+        positionToPieceMap.remove(position);
     }
 
     /**
@@ -144,5 +169,28 @@ public class GameState {
     private void placePiece(Piece piece, Position position) {
         positionToPieceMap.put(position, piece);
         piece.setPosition(position);
+    }
+
+    /**
+     * Updates the positionToPieceMap given a valid game move
+     * @param move- String of the form "initialPosition finalPosition"
+     * @return- boolean for whether or not the requested move was valid
+     */
+    public boolean makeMoveIfValid(String move) {
+        // get the set of the current player's possible moves
+        Set<String> possibleMoves = Sets.newHashSet(getMovesList());
+
+        // if the set of possible moves doesn't contain the requested move- it's invalid input
+        if (!possibleMoves.contains(move)) {
+            return false;
+        }
+
+        String fromPosition = move.substring(0, 2);
+        String toPosition = move.substring(3, 5);
+
+        // remove the Piece from its original Position and place it in its new Position
+        removePieceAt(fromPosition);
+        placePiece(getPieceAt(fromPosition), new Position(toPosition));
+        return true;
     }
 }

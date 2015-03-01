@@ -3,9 +3,11 @@ package chess;
 import chess.pieces.Piece;
 import chess.pieces.Queen;
 import chess.pieces.Rook;
+import com.google.common.collect.Maps;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.Map;
 import java.util.Set;
 
 import static junit.framework.Assert.*;
@@ -16,10 +18,13 @@ import static junit.framework.Assert.*;
 public class GameStateTest {
 
     private GameState state;
+    private Map<Piece, Position> board;
+    private String testPosition;
 
     @Before
     public void setUp() {
         state = new GameState();
+        board = Maps.newHashMap();
     }
 
     @Test
@@ -59,4 +64,48 @@ public class GameStateTest {
 
         assertEquals("There should be 20 possible first moves", 20, moves.size());
     }
+
+    @Test
+    public void testMakeMoveIfValidWithInvalidMove() {
+        state.reset();
+        assertFalse(state.makeMoveIfValid("blah"));
+        assertFalse(state.makeMoveIfValid("2 a5"));
+        assertFalse(state.makeMoveIfValid("a2 a6"));
+        assertFalse(state.makeMoveIfValid("c5 d7"));
+    }
+
+    @Test
+    public void testMakeMoveIfValidToEmptySpace() {
+        testPosition = "d1";
+        Player owner = Player.White;
+        board.put(new Rook(owner), new Position(testPosition));
+        state.setFakeBoard(board);
+
+        assertTrue(state.makeMoveIfValid("d1 d5"));
+        assertNull(state.getPieceAt("d1"));
+        assertEquals(state.getPieceAt("d5").getOwner(), owner);
+    }
+
+    @Test
+    public void testMakeMoveIfValidToOccupiedSpace() {
+        testPosition = "d1";
+        Player owner = Player.White;
+        board.put(new Rook(owner), new Position(testPosition));
+        board.put(new Rook(Player.Black), new Position("d5"));
+        state.setFakeBoard(board);
+
+        assertTrue(state.makeMoveIfValid("d1 d5"));
+        assertNull(state.getPieceAt("d1"));
+        assertEquals(state.getPieceAt("d5").getOwner(), owner);
+    }
+
+    @Test
+    public void testSwitchCurrentPlayer() {
+        assertEquals(state.getCurrentPlayer(), Player.White);
+        state.switchCurrentPlayer();
+        assertEquals(state.getCurrentPlayer(), Player.Black);
+        state.switchCurrentPlayer();
+        assertEquals(state.getCurrentPlayer(), Player.White);
+    }
+
 }
