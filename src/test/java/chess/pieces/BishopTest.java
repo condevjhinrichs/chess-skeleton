@@ -31,9 +31,8 @@ public class BishopTest {
 
     @Test
     public void testGetPossibleMovesGameInit() {
-        testPosition = "c1";
         gameState.reset();
-        bishop = (Bishop) gameState.getPieceAt(testPosition);
+        bishop = (Bishop) gameState.getPieceAt("c1");
         resultMoves = bishop.getPossibleMoves(gameState.getPositionToPieceMap());
         assertEquals(0, resultMoves.size());
     }

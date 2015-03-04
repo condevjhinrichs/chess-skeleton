@@ -1,12 +1,9 @@
 package chess;
 
 import chess.pieces.Piece;
-import com.google.common.collect.Lists;
 
 import java.io.*;
-import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 
 /**
  * This class provides the basic CLI interface to the Chess game.
@@ -18,6 +15,7 @@ public class CLI {
     private final PrintStream outStream;
 
     private GameState gameState = null;
+    private boolean gameInProgress = true;
 
     public CLI(InputStream inputStream, PrintStream outStream) {
         this.inReader = new BufferedReader(new InputStreamReader(inputStream));
@@ -52,7 +50,15 @@ public class CLI {
 
         while (true) {
             showBoard();
-            writeOutput(gameState.getCurrentPlayer() + "'s Move");
+            if (gameInProgress && gameState.isGameOver()) {
+                gameInProgress = false;
+                writeOutput(gameState.getGameResult());
+            } else if (gameInProgress) {
+                if (gameState.isInCheck()) {
+                    writeOutput(gameState.getCurrentPlayer() + " is in Check");
+                }
+                writeOutput(gameState.getCurrentPlayer() + "'s Move");
+            }
 
             String input = getInput();
             if (input == null) {
@@ -68,6 +74,10 @@ public class CLI {
                     System.exit(0);
                 } else if (input.equals("board")) {
                     writeOutput("Current Game:");
+
+                // disallow 'list' and 'move' if the game is over
+                } else if (!gameInProgress) {
+                    displayGameOverMessage();
                 } else if (input.equals("list")) {
                     writeOutput(gameState.getCurrentPlayer() + "'s Possible Moves:");
                     writeOutput(getMovesAsString());
@@ -84,6 +94,7 @@ public class CLI {
 
     private void doNewGame() {
         gameState = new GameState();
+        gameInProgress = true;
         gameState.reset();
     }
 
@@ -162,6 +173,12 @@ public class CLI {
         }
 
         builder.append(NEWLINE);
+    }
+
+    private void displayGameOverMessage() {
+        writeOutput(gameState.getOpponent() + " won- the game is over!");
+        writeOutput("Type 'new' to play again :)");
+        writeOutput("'help' for more options\n");
     }
 
     public static void main(String[] args) {

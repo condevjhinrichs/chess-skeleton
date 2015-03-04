@@ -77,13 +77,13 @@ public class Pawn extends Piece {
 
         // add the new position if there is no piece there and the movement is straight ahead
         if (pieceAtPosition == null && colMovement == 0) {
-            addPossibleMove(newPosition);
+            possibleMoves = addPossibleMove(newPosition, possibleMoves);
             return;
         }
 
-        // add the new position if there is an opponent there and that position is a diagonal
+        // add the new position if the movement is to the diagonal where there is an opponent
         if (pieceAtPosition != null && pieceAtPosition.getOwner() != getOwner() && colMovement != 0) {
-            addPossibleMove(newPosition);
+            possibleMoves = addPossibleMove(newPosition, possibleMoves);
         }
     }
 
@@ -97,16 +97,5 @@ public class Pawn extends Piece {
         boolean blackInHomeRow = (getOwner() == Player.Black) && (getPosition().getRow() == 7);
 
         return whiteInHomeRow || blackInHomeRow;
-    }
-
-    /**
-     * Given a newPosition to add to the possible moves set, this method forms the actual String representing the move
-     * and adds it to the set
-     * Ex: "c2 c4"
-     *
-     * @param newPosition
-     */
-    private void addPossibleMove(Position newPosition) {
-        possibleMoves.add(getPosition().toString() + " " + newPosition.toString());
     }
 }

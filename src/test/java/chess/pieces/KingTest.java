@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -89,17 +90,16 @@ public class KingTest {
 
     @Test
     public void testGetPossibleMovesInCheck() {
-        testPosition = "d1";
-        board.put(new King(Player.White), new Position(testPosition));
-
-        board.put(new Queen(Player.Black), new Position("c1"));
-        board.put(new Bishop(Player.Black), new Position("d2"));
+        board.put(new King(Player.White), new Position("d1"));
+        board.put(new Queen(Player.Black), new Position("b1"));
         gameState.setFakeBoard(board);
 
-        king = (King) gameState.getPieceAt(testPosition);
+        king = (King) gameState.getPieceAt("d1");
         resultMoves = king.getPossibleMoves(gameState.getPositionToPieceMap());
-        assertEquals(1, resultMoves.size());
+        assertEquals(2, resultMoves.size());
+        assertTrue(resultMoves.contains("d1 d2"));
         assertTrue(resultMoves.contains("d1 e2"));
+        assertFalse(resultMoves.contains("d1 e1"));
     }
 
     @Test

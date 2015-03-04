@@ -125,6 +125,34 @@ public class CLITest {
         assertTrue("It should print the moves list", output.get(7).contains("f7 f5"));
     }
 
+    @Test
+    public void testPlayerInCheckMessage() {
+        runCliWithInput("move a2 a3", "move e7 e6", "move f2 f4", "move d8 h4");
+        List<String> output = captureOutput();
+        assertTrue(output.get(output.size() - 2).contains("White is in Check"));
+    }
+
+    @Test
+    public void testGameOver() {
+        runCliWithInput("move f2 f3", "move e7 e5", "move g2 g4", "move d8 h4");
+        List<String> output = captureOutput();
+        assertTrue(output.get(output.size() - 1).contains("Black Wins"));
+    }
+
+    @Test
+    public void testInputAfterGameOver() {
+        runCliWithInput("move f2 f3", "move e7 e5", "move g2 g4", "move d8 h4", "move a2 a3");
+        List<String> output = captureOutput();
+        assertTrue(output.get(output.size() - 4).contains("won- the game is over!"));
+    }
+
+    @Test
+    public void testStartNewGameAfterGameOver() {
+        runCliWithInput("move f2 f3", "move e7 e5", "move g2 g4", "move d8 h4", "new");
+        List<String> output = captureOutput();
+        assertTrue(output.get(output.size() - 1).contains("White's Move"));
+    }
+
 
     private List<String> captureOutput() {
         ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);

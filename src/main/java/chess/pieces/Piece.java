@@ -57,7 +57,7 @@ public abstract class Piece {
      * @param movements - a 2D array holding a set of potential movements
      * @return Set of strings of the form:  "currentPosition possiblePosition"
      */
-    protected Set<String> getPossibleMoves(Map<Position, Piece> positionPieceMap, int[][] movements) {
+    protected Set<String> getPossibleRepetitiveMoves(Map<Position, Piece> positionPieceMap, int[][] movements) {
         MOVEMENTS = movements;
         positionToPieceMap = positionPieceMap;
         possibleMoves = Sets.newHashSet();
@@ -115,13 +115,23 @@ public abstract class Piece {
     /**
      * Given a new position to add to the possible moves set, this method forms the string representing the move
      * and adds it to the set (ex: "c2 c4")
-     *
      * @param newPosition
      */
     private void addPossibleMove(Position newPosition) {
         possibleMoves.add(getPosition().toString() + " " + newPosition.toString());
     }
 
+    /**
+     * Given a new position to add to the possible moves set, this method forms the string representing the move
+     * and adds it to the set (ex: "c2 c4")
+     * @param newPosition
+     * @param possibleMoves
+     * @return
+     */
+    protected Set<String> addPossibleMove(Position newPosition, Set<String> possibleMoves) {
+        possibleMoves.add(getPosition().toString() + " " + newPosition.toString());
+        return possibleMoves;
+    }
 
 
     /**

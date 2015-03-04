@@ -52,7 +52,7 @@ public class Position {
         int newColIndex = COLUMNS.indexOf(getColumn()) + colMovement;
         int newRow = getRow() + rowMovement;
 
-        return 0 <= newColIndex && newColIndex <= 7 && 1 <= newRow && newRow <= 8;
+        return 0 <= newColIndex && newColIndex <= 7 && MIN_ROW <= newRow && newRow <= MAX_ROW;
     }
 
     /**

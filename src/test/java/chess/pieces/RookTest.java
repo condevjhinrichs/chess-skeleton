@@ -31,9 +31,8 @@ public class RookTest {
 
     @Test
     public void testGetPossibleMovesGameInit() {
-        testPosition = "a1";
         gameState.reset();
-        rook = (Rook) gameState.getPieceAt(testPosition);
+        rook = (Rook) gameState.getPieceAt("a1");
         resultMoves = rook.getPossibleMoves(gameState.getPositionToPieceMap());
         assertEquals(0, resultMoves.size());
     }

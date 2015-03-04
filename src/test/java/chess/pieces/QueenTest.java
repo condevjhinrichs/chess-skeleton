@@ -31,9 +31,8 @@ public class QueenTest {
 
     @Test
     public void testGetPossibleMovesGameInit() {
-        testPosition = "d1";
         gameState.reset();
-        queen = (Queen) gameState.getPieceAt(testPosition);
+        queen = (Queen) gameState.getPieceAt("d1");
         resultMoves = queen.getPossibleMoves(gameState.getPositionToPieceMap());
         assertEquals(0, resultMoves.size());
     }

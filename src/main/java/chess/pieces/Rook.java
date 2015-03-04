@@ -30,6 +30,6 @@ public class Rook extends Piece {
      */
     @Override
     public Set<String> getPossibleMoves(Map<Position, Piece> positionToPieceMap) {
-        return getPossibleMoves(positionToPieceMap, MOVEMENTS);
+        return getPossibleRepetitiveMoves(positionToPieceMap, MOVEMENTS);
     }
 }

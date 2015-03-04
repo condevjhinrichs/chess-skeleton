@@ -32,9 +32,8 @@ public class KnightTest {
 
     @Test
     public void testGetPossibleMovesGameInit() {
-        testPosition = "g8";
         gameState.reset();
-        knight = (Knight) gameState.getPieceAt(testPosition);
+        knight = (Knight) gameState.getPieceAt("g8");
         resultMoves = knight.getPossibleMoves(gameState.getPositionToPieceMap());
         assertEquals(2, resultMoves.size());
     }

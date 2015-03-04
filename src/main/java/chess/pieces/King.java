@@ -35,31 +35,29 @@ public class King extends Piece {
      */
     @Override
     public Set<String> getPossibleMoves(Map<Position, Piece> positionPieceMap) {
-        return getPossibleMoves(positionPieceMap, true);
+        return getPossibleMovesInContext(positionPieceMap, true);
     }
 
     /**
-     * Gets the set of a king's possible moves including those that would put the king in check
-     * This is used in determining the opponent's set of moves to see if the game is in check.
-     * An opponent king putting itself in check to capture the current king would be a valid move
+     * Gets the set of a king's possible moves including those that would put the king in check.
+
+     * This would be used in determining the current player's enemy's possible moves,
+     * in which case the opponent king putting itself in check to capture the other king would be a valid move.
      * @param positionPieceMap
-     * @return
+     * @return Set of possible move Strings
      */
     public Set<String> getPossibleMovesIgnoringCheck(Map<Position, Piece> positionPieceMap) {
-        return getPossibleMoves(positionPieceMap, false);
+        return getPossibleMovesInContext(positionPieceMap, false);
     }
 
     /**
-     * Gets the set of the king's valid possible moves given the current state of the board
-     * If this method is being called to determine if the current player is in check,
-     * this method will be called in the context of determining the current player's enemy's possible moves,
-     * in which case we don't want to protect against possible moves putting the king in check.
-     * The boolean 'testCheck' sets this flag.
+     * Gets the set of the king's valid possible moves for the given board,
+     *
      * @param positionPieceMap
      * @param testCheck- if false, don't check if the king would be in check in determining whether the move is valid
      * @return Set of Strings of the form:  "a2 a4"
      */
-    private Set<String> getPossibleMoves(Map<Position, Piece> positionPieceMap, boolean testCheck) {
+    private Set<String> getPossibleMovesInContext(Map<Position, Piece> positionPieceMap, boolean testCheck) {
         positionToPieceMap = positionPieceMap;
         possibleMoves = Sets.newHashSet();
 
@@ -96,23 +94,14 @@ public class King extends Piece {
         }
 
         // return if moving to the new Position would put the king in check
+        // testCheck is false when we're getting possible moves of the opponent king-
+        // when we don't care if that king would be putting itself in check
         if (testCheck && wouldBeInCheck(newPosition)) {
             return;
         }
 
         // add the Position if there's an enemy there or if it's empty
-        addPossibleMove(newPosition);
-
-    }
-
-    /**
-     * Given a new Position to add to the possible moves set, this method forms the String representing the move
-     * and adds it to the set (ex: "c2 c4")
-     *
-     * @param newPosition
-     */
-    private void addPossibleMove(Position newPosition) {
-        possibleMoves.add(getPosition().toString() + " " + newPosition.toString());
+        possibleMoves = addPossibleMove(newPosition, possibleMoves);
     }
 
     /**
@@ -149,11 +138,13 @@ public class King extends Piece {
             // put the king in the position under test
             kingInTestPositionMap = Maps.newHashMap(positionToPieceMap);
             kingInTestPositionMap.put(testPosition, currentPlayerKing);
+            kingInTestPositionMap.remove(getPosition());
+            currentPlayerKing.setPosition(testPosition);
 
             Set<String> pieceMoves;
             if (piece.getClass() == King.class) {
                 King king = (King) piece;
-                pieceMoves = king.getPossibleMoves(kingInTestPositionMap, false);
+                pieceMoves = king.getPossibleMovesIgnoringCheck(kingInTestPositionMap);
             } else {
                 pieceMoves = piece.getPossibleMoves(kingInTestPositionMap);
             }

@@ -2,6 +2,7 @@ package chess;
 
 import chess.pieces.Bishop;
 import chess.pieces.King;
+import chess.pieces.Knight;
 import chess.pieces.Piece;
 import chess.pieces.Queen;
 import chess.pieces.Rook;
@@ -63,10 +64,9 @@ public class GameStateTest {
     }
 
     @Test
-    public void testGetMovesList() {
+    public void testGetPossibleMoves() {
         state.reset();
-        Set<String> moves = state.getMovesList();
-
+        Set<String> moves = state.getPossibleMoves();
         assertEquals("There should be 20 possible first moves", 20, moves.size());
     }
 
@@ -74,7 +74,6 @@ public class GameStateTest {
     public void testGetPossibleMovesList() {
         state.reset();
         List<String> moves = state.getPossibleMovesList();
-
         assertEquals("There should be 20 possible first moves", 20, moves.size());
     }
 
@@ -86,24 +85,56 @@ public class GameStateTest {
     }
 
     @Test
-    public void testGetMovesListInCheck() {
+    public void testGetPossibleMovesInCheckAvoid() {
         board.put(new King(Player.White), new Position("d1"));
         board.put(new Rook(Player.White), new Position("a6"));
-        board.put(new King(Player.Black), new Position("d8"));
-        board.put(new Queen(Player.Black), new Position("c1"));
-        board.put(new Bishop(Player.Black), new Position("d2"));
+        board.put(new Queen(Player.Black), new Position("b1"));
         state.setFakeBoard(board);
 
-        // White king has 1 possible move
-        assertEquals(1, state.getPieceAt("d1").getPossibleMoves(state.getPositionToPieceMap()).size());
+        // White king has 2 possible moves
+        assertEquals(2, state.getPieceAt("d1").getPossibleMoves(state.getPositionToPieceMap()).size());
 
         // White rook has 14 possible moves
         assertEquals(14, state.getPieceAt("a6").getPossibleMoves(state.getPositionToPieceMap()).size());
 
-        Set<String> whitePossibleMoves = state.getMovesList();
-        assertEquals(1, whitePossibleMoves.size());
+        Set<String> whitePossibleMoves = state.getPossibleMoves();
+        assertEquals(2, whitePossibleMoves.size());
+        assertTrue(whitePossibleMoves.contains("d1 d2"));
         assertTrue(whitePossibleMoves.contains("d1 e2"));
+    }
 
+    @Test
+    public void testGetPossibleMovesInCheckWithBlockingCounter() {
+        state.reset();
+        state.makeMoveIfValid("a2 a3");
+        state.makeMoveIfValid("e7 e6");
+        state.makeMoveIfValid("f2 f4");
+        state.makeMoveIfValid("d8 h4");
+
+        // Pawn "g2 g3" can block the Queen
+        assertTrue(state.isInCheck());
+        assertFalse(state.isCheckMate());
+        assertFalse(state.isGameOver());
+        assertEquals(1, state.getPossibleMoves().size());
+    }
+
+    @Test
+    public void testGetPossibleMovesInCheckWithCapturingCounter() {
+        board.put(new King(Player.White), new Position("h5"));
+        board.put(new Queen(Player.Black), new Position("d1"));
+        board.put(new Rook(Player.White), new Position("a1"));
+        board.put(new Bishop(Player.White), new Position("b3"));
+        state.setFakeBoard(board);
+
+        // Rook or Bishop can capture the Queen
+        assertTrue(state.isInCheck());
+        assertFalse(state.isCheckMate());
+        assertFalse(state.isGameOver());
+
+        Set<String> result = state.getPossibleMoves();
+        assertEquals(6, result.size());
+        assertTrue(result.contains("a1 d1"));
+        assertTrue(result.contains("b3 d1"));
     }
 
     @Test
@@ -174,5 +205,54 @@ public class GameStateTest {
         board.put(new Rook(Player.White), new Position("e5"));
         state.setFakeBoard(board);
         assertTrue(state.isInCheck());
+    }
+
+    @Test
+    public void testIsCheckMate() {
+        state.reset();
+        state.makeMoveIfValid("f2 f3");
+        state.makeMoveIfValid("e7 e5");
+        state.makeMoveIfValid("g2 g4");
+        state.makeMoveIfValid("d8 h4");
+
+        assertTrue(state.isInCheck());
+        assertTrue(state.isCheckMate());
+        assertTrue(state.isGameOver());
+    }
+
+    @Test
+    public void testIsDraw() {
+        board.put(new King(Player.White), new Position("a1"));
+        board.put(new Queen(Player.Black), new Position("c2"));
+        state.setFakeBoard(board);
+        assertTrue(state.isDraw());
+        assertFalse(state.isInCheck());
+        assertFalse(state.isCheckMate());
+        assertTrue(state.isGameOver());
+    }
+
+    @Test
+    public void testGetGameResultAtInit() {
+        state.reset();
+        assertTrue(state.getGameResult().contains("in progress"));
+    }
+
+    @Test
+    public void testGetGameResultInDraw() {
+        board.put(new King(Player.White), new Position("a1"));
+        board.put(new Queen(Player.Black), new Position("c2"));
+        state.setFakeBoard(board);
+
+        assertTrue(state.getGameResult().contains("Draw"));
+    }
+
+    @Test
+    public void testGetGameResultInCheckMate() {
+        board.put(new King(Player.White), new Position("a1"));
+        board.put(new Queen(Player.Black), new Position("c2"));
+        board.put(new Rook(Player.Black), new Position("a3"));
+        state.setFakeBoard(board);
+
+        assertTrue(state.getGameResult().contains("Black Wins!"));
     }
 }

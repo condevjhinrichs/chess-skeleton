@@ -69,20 +69,6 @@ public class Knight extends Piece {
         }
 
         // add the position if there's an enemy there or if it's empty
-        addPossibleMove(newPosition);
-
+        possibleMoves = addPossibleMove(newPosition, possibleMoves);
     }
-
-    /**
-     * Given a new Position to add to the possible moves set, this method forms the String representing the move
-     * and adds it to the set (ex: "c2 c4")
-     *
-     * @param newPosition
-     */
-    private void addPossibleMove(Position newPosition) {
-        possibleMoves.add(getPosition().toString() + " " + newPosition.toString());
-    }
-
-
-
 }

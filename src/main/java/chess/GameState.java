@@ -5,6 +5,7 @@ import chess.pieces.*;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -12,6 +13,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
 
 /**
  * Class that represents the current state of the game.  Basically, what pieces are in which positions on the
@@ -112,7 +114,7 @@ public class GameState {
      * @return sorted List of Strings "a2 a4"
      */
     public List<String> getPossibleMovesList() {
-        List<String> possibleMoves = Lists.newArrayList(getMovesList());
+        List<String> possibleMoves = Lists.newArrayList(getPossibleMoves());
         Collections.sort(possibleMoves);
         return possibleMoves;
     }
@@ -121,10 +123,9 @@ public class GameState {
      * Gets the Set of all possible moves for the current player
      * @return Set of Strings representing moves- "c2 d3"
      */
-    public Set<String> getMovesList() {
-        // if the current player is in check, return the possible moves of the king only
+    public Set<String> getPossibleMoves() {
         if (isInCheck()) {
-            return getCurrentPlayerKing().getPossibleMoves(positionToPieceMap);
+            return getCounterMoves();
         }
 
         // otherwise return all Pieces' possible moves
@@ -132,29 +133,65 @@ public class GameState {
     }
 
     /**
-     * Gets the current player's king
+     * Filters through the player moves and returns the ones that will take the player out of check
+     * @return
+     */
+    private Set<String> getCounterMoves() {
+        Set<String> counterMoves = Sets.newHashSet();
+
+        for(String move : getPlayerMoves()) {
+            Map<Position, Piece> tempPositionPieceMap = Maps.newHashMap(positionToPieceMap);
+            String fromPosition = move.substring(0, 2);
+            String toPosition = move.substring(3, 5);
+
+            // place the Piece in its new Position and remove it from the old one
+            tempPositionPieceMap.put(new Position(toPosition), getPieceAt(fromPosition, tempPositionPieceMap));
+            tempPositionPieceMap.remove(new Position(fromPosition));
+            // update the piece's position
+            getPieceAt(toPosition, tempPositionPieceMap).setPosition(new Position(toPosition));
+
+            if(!isInCheck(tempPositionPieceMap)) {
+                counterMoves.add(move);
+            }
+            // reset the piece's position
+            getPieceAt(toPosition, tempPositionPieceMap).setPosition(new Position(fromPosition));
+        }
+
+        return counterMoves;
+    }
+
+    /**
+     * Determines whether the current player is in check for the live gameState
+     * @return
+     */
+    public boolean isInCheck() {
+        return isInCheck(positionToPieceMap);
+    }
+
+    /**
+     * Determines whether the current player is in check for a given board
+     * @return boolean
+     */
+    private boolean isInCheck(Map<Position, Piece> positionPieceMap) {
+        // player is in check iff their king's position is in the set of positions of the opponent's possible moves
+        String kingPosition = getKingPosition(positionPieceMap);
+        return getOpponentMovesPositionsOnly(positionPieceMap).contains(kingPosition);
+    }
+
+    /**
+     * Gets the String position of the current player's king
      * @return King
      */
-    private King getCurrentPlayerKing() {
+    private String getKingPosition(Map<Position, Piece> positionPieceMap) {
         King king = new King(getCurrentPlayer());
-        for (Map.Entry<Position, Piece> positionPiece : positionToPieceMap.entrySet()) {
+        for (Map.Entry<Position, Piece> positionPiece : positionPieceMap.entrySet()) {
             if (positionPiece.getValue().getClass() == King.class &&
                     positionPiece.getValue().getOwner() == getCurrentPlayer()) {
                 king = (King) positionPiece.getValue();
                 break;
             }
         }
-        return king;
-    }
-
-    /**
-     * Determines whether the current player is in check
-     * @return boolean
-     */
-    public boolean isInCheck() {
-        // player is in check iff their king's position is in the set of positions of the opponent's possible moves
-        String kingPosition = getCurrentPlayerKing().getPosition().toString();
-        return getOpponentMovesPositionsOnly().contains(kingPosition);
+        return king.getPosition().toString();
     }
 
     /**
@@ -164,16 +201,16 @@ public class GameState {
     private Set<String> getPlayerMoves() {
         Map<Position, Piece> currentPlayerPieces = Maps.filterEntries(positionToPieceMap, new PlayerFilter
                 (getCurrentPlayer()));
-        return getPlayerMoves(currentPlayerPieces, false);
+        return getPlayerMoves(positionToPieceMap, currentPlayerPieces, false);
     }
 
     /**
-     * Finds the Set of positions of all the opponent's possible moves for the gameState
+     * Finds the Set of positions of all the opponent's possible moves for the given board
      * @return Set of Positions as Strings
      */
-    private Set<String> getOpponentMovesPositionsOnly() {
-        Map<Position, Piece> opponentPieces = Maps.filterEntries(positionToPieceMap, new PlayerFilter(getOpponent()));
-        return getPlayerMoves(opponentPieces, true);
+    private Set<String> getOpponentMovesPositionsOnly(Map<Position, Piece> positionPieceMap) {
+        Map<Position, Piece> opponentPieces = Maps.filterEntries(positionPieceMap, new PlayerFilter(getOpponent()));
+        return getPlayerMoves(positionPieceMap, opponentPieces, true);
     }
 
     /**
@@ -183,11 +220,13 @@ public class GameState {
      *                                true will give a Set of only the "c4"
      * @return Set of Strings
      */
-    private Set<String> getPlayerMoves(Map<Position, Piece> playerPieces, boolean testingCheck) {
+    private Set<String> getPlayerMoves(Map<Position, Piece> map, Map<Position, Piece> playerPieces, boolean
+            testingCheck) {
+
         Set<String> possibleMoves = new HashSet<String>();
 
         for(Map.Entry<Position, Piece> positionPiece : playerPieces.entrySet()) {
-            Set<String> pieceMoves = getPieceMovesInContext(positionPiece.getValue(), testingCheck);
+            Set<String> pieceMoves = getPieceMovesInContext(map, positionPiece.getValue(), testingCheck);
 
             // add the possible moves or positions for the current piece to possibleMoves
             for(String move : pieceMoves) {
@@ -210,14 +249,15 @@ public class GameState {
      * @param ignoreCheck- boolean
      * @return
      */
-    private Set<String> getPieceMovesInContext(Piece piece, boolean ignoreCheck) {
+    private Set<String> getPieceMovesInContext(Map<Position, Piece> positionPieceMap, Piece piece, boolean
+            ignoreCheck) {
         Set<String> pieceMoves;
 
         if (ignoreCheck && piece.getClass() == King.class) {
             King king = (King) piece;
-            pieceMoves = king.getPossibleMovesIgnoringCheck(positionToPieceMap);
+            pieceMoves = king.getPossibleMovesIgnoringCheck(positionPieceMap);
         } else {
-            pieceMoves = piece.getPossibleMoves(positionToPieceMap);
+            pieceMoves = piece.getPossibleMoves(positionPieceMap);
         }
 
         return pieceMoves;
@@ -229,8 +269,18 @@ public class GameState {
      * @return The piece at that position, or null if it does not exist.
      */
     public Piece getPieceAt(String colrow) {
+        return getPieceAt(colrow, positionToPieceMap);
+    }
+
+    /**
+     * Get the piece at the given string-form position on the given board
+     * @param colrow
+     * @param positionPieceMap
+     * @return
+     */
+    private Piece getPieceAt(String colrow, Map<Position, Piece> positionPieceMap) {
         Position position = new Position(colrow);
-        return getPieceAt(position);
+        return getPieceAt(position, positionPieceMap);
     }
 
     /**
@@ -239,7 +289,17 @@ public class GameState {
      * @return The piece at that position, or null if it does not exist.
      */
     public Piece getPieceAt(Position position) {
-        return positionToPieceMap.get(position);
+        return getPieceAt(position, positionToPieceMap);
+    }
+
+    /**
+     * Get the piece at the given Position-form position on the given board
+     * @param position
+     * @param positionPieceMap
+     * @return
+     */
+    private Piece getPieceAt(Position position, Map<Position, Piece> positionPieceMap) {
+        return positionPieceMap.get(position);
     }
 
     /**
@@ -248,7 +308,17 @@ public class GameState {
      * @param position The position
      */
     private void placePiece(Piece piece, Position position) {
-        positionToPieceMap.put(position, piece);
+        placePiece(piece, position, positionToPieceMap);
+    }
+
+    /**
+     * Place a piece at a position for a given board
+     * @param piece
+     * @param position
+     * @param positionPieceMap
+     */
+    private void placePiece(Piece piece, Position position, Map<Position, Piece> positionPieceMap) {
+        positionPieceMap.put(position, piece);
         piece.setPosition(position);
     }
 
@@ -276,7 +346,7 @@ public class GameState {
      */
     public boolean makeMoveIfValid(String move) {
         // get the set of the current player's possible moves
-        Set<String> possibleMoves = getMovesList();
+        Set<String> possibleMoves = getPossibleMoves();
 
         // if the set of possible moves doesn't contain the requested move- it's invalid input
         if (!possibleMoves.contains(move)) {
@@ -293,5 +363,37 @@ public class GameState {
         // on a successful move- switch the current player
         switchCurrentPlayer();
         return true;
+    }
+
+    /**
+     * Determines whether the game is over due to draw or check mate.
+     * @return boolean
+     */
+    public boolean isGameOver() {
+        return isDraw() || isCheckMate();
+    }
+
+    /**
+     * Determines if the game is a draw- if the current player is not in check but has no possible moves
+     * @return boolean
+     */
+    public boolean isDraw() {
+        return !isInCheck() && getPossibleMoves().size() == 0;
+    }
+
+    /**
+     * Determines if the current player is in check mate- if they are in check and have no possible moves
+     * @return
+     */
+    public boolean isCheckMate() {
+        return isInCheck() && getPossibleMoves().size() == 0;
+    }
+
+    /**
+     * Gives the result (or status) of the game
+     * @return
+     */
+    public String getGameResult() {
+        return !isGameOver() ? "Game in progress..." : isDraw() ? "Game Over - Draw" : getOpponent() + " Wins!";
     }
 }
